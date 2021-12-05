@@ -39,6 +39,12 @@ def f01():
         print(buses[idx] * diff[idx])
 
 
+def reduce(step1, step2, diff, start):
+    for i in range(start, step1 * step2 + start, step2):
+        if (i - diff) % step1 == 0:
+            return i
+
+
 def f02():
     with open('input') as file:
         _, buses = file.read().splitlines()
@@ -54,19 +60,16 @@ def f02():
             else:
                 d += 1
 
-        #print(diff)
-
         buses = [int(b) for b in buses if b.isnumeric()]
 
-        #print(buses)
+        current_step = 1
+        result = 0
+        for i in range(len(buses) - 2, -1, -1):
+            current_step *= buses[i + 1]
+            result = reduce(buses[i], current_step, diff[i], result) - diff[i]
 
-        for i in itertools.count():
-            foo = [(-(i % b) + b) % b for b in buses]
-            bar = [foo[j + 1] - foo[j] for j in range(len(buses) - 1)]
-            #print(i, foo, bar, diff)
-            if foo[0] == 0 and bar == diff:
-                print(i)
-                break
+        assert(result == 487905974205117)
+        print(result)
 
 
 def main():
