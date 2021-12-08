@@ -29,7 +29,7 @@ def msplit(s, ds=None):
 
 
 def f01():
-    with open('input2') as file:
+    with open('input') as file:
         rules, tests = file.read().split('\n\n')
 
         d = {}
@@ -41,29 +41,78 @@ def f01():
                 continue
             foo = []
             for r in rest.split('|'):
+                bar = []
                 for n in r.strip().split(' '):
-                   foo.append(int(n))
+                    bar.append(int(n))
+                foo.append(bar)
             d[num] = foo
 
-        print(d)
+        #print(d)
 
-        def match(n):
+        def match(s, n):
+            if (s, n) in match.m:
+                return match.m[(s, n)]
+
             c = d[n]
 
+            def do(c1, c2):
+                #assert(len(s) >= 2)
+                if len(s) == 1:
+                    return False
+                for l in range(1, len(s)):
+                    r1 = match(s[:l], c1)
+                    if r1:
+                        r2 = match(s[l:], c2)
+
+                        if r2:
+                            #print(s, c1, c2, "True")
+                            return True
+
+               # print(s, c1, c2, "False")
+                return False
+
             if c == 'a' or c == 'b':
-                return c
+                #print(s, n, "True" if s == c else "False")
+                result = len(s) == 1 and s == c
+                match.m[(s, n)] = result
+                return result
 
             if len(c) == 1:
-                return match(c[0])
+                if len(c[0]) == 1:
+                    # One single
+                    result = match(s, c[0][0])
+                    match.m[(s, n)] = result
+                    return result
+                else:
+                    # Two and
+                    assert(len(c[0]) == 2)
+                    result = do(c[0][0], c[0][1])
+                    match.m[(s, n)] = result
+                    return result
 
             if len(c) == 2:
-                return [match(c[0]) + match(c[1])]
-            if len(c) == 3:
-                return [match(c[0]) + match(c[1]) + match(c[2])]
-            if len(c) == 4:
-                return [(match(c[0]) + match(c[1])), (match(c[2]) + match(c[3]))]
+                if len(c[0]) == 1:
+                    # Two single
+                    assert(len(c[1]) == 1)
+                    result = match(s, c[0][0]) or match(s, c[1][0])
+                    match.m[(s, n)] = result
+                    return result
+                else:
+                    # Two and
+                    assert (len(c[1]) == 2)
+                    assert (len(c[1]) == 2)
+                    result = do(c[0][0], c[0][1]) or do(c[1][0], c[1][1])
+                    match.m[(s, n)] = result
+                    return result
 
-        print(match(0))
+            assert(False)
+        match.m = {}
+
+        print(sum(match(t, 0) for t in tests.splitlines()))
+
+        #for t in tests.splitlines():
+            #print(t, match(t, 0))
+
 
 
 def f02():
