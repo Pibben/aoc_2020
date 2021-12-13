@@ -5,6 +5,7 @@ import numpy as np
 import re
 import itertools
 import functools
+import pprint
 
 
 def toInt(c):
@@ -57,6 +58,27 @@ def f01():
         print(sum)
 
 
+def mbm(c):
+    a = range(len(c))
+    b = list(set.union(*c))
+
+    def do(u, matches, seen):
+        for v in c[u]:
+            vi = b.index(v)
+            if not seen[vi]:
+                seen[vi] = True
+                if matches[vi] is None or do(matches[vi], matches, seen):
+                    matches[vi] = u
+                    return True
+        return False
+
+    matches = [None] * len(b)
+    for u in a:
+        do(u, matches, [False] * len(b))
+
+    return [b[matches.index(aa)] for aa in a]
+
+
 def f02():
     with open('input') as file:
         rules, my, near = file.read().split('\n\n')
@@ -90,48 +112,24 @@ def f02():
         names = []
         for f in range(len(rules)):
             names.append(set())
-            #print("f = ", f)
             for ri in range(len(rules)):
                 l = limits[ri]
-                #print(l[2])
                 ok = True
                 for n in valid_near:
                     n = toInt(n.split(','))[f]
-                    #print(n)
                     if not ((l[0][0] <= n <= l[0][1]) or (l[1][0] <= n <= l[1][1])):
-                        #print("break")
                         ok = False
                         break
                 if ok:
-                    #print("Adding", l[2])
                     names[f].add(l[2])
-                    #print(l[ri])
-                    #break
-        #print(names)
 
-        actual = [None] * len(rules)
-
-        while any([len(a) > 0 for a in names]):
-
-            for idx in range(len(names)):
-                if len(names[idx]) == 1:
-                    break
-
-            (e,) = names[idx]
-
-            for c in range(len(names)):
-                if e in names[c]:
-                    names[c].remove(e)
-
-            actual[idx] = e
-
-        print(actual)
+        actual = mbm(names)
 
         indices = [actual.index(a) for a in departure]
-        print(indices)
-        print(my)
 
-        print(functools.reduce((lambda x, y: x * y), [my[a] for a in indices]))
+        result = functools.reduce((lambda x, y: x * y), [my[a] for a in indices])
+        print(result)
+        assert(result == 953713095011)
 
 
 def main():
